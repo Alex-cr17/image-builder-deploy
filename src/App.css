@@ -20,7 +20,6 @@
 }
 
 #cursor-image {
-  display: block;
   pointer-events: none;
   position: absolute;
   z-index: 9999999;
@@ -31,6 +30,9 @@
 }
 
 @media (min-width:320px)  {
+  #cursor-image {
+    display: none;
+  }
   .image-editor-container {
     flex-direction: column;
   }
@@ -46,19 +48,21 @@
   }
 
   .history-actions {
-    position: absolute;
-    right: 0px;
-    top: 0px;
+   display: none;
   }
 }
 
 @media (min-width:1024px) {
+  #cursor-image {
+    display: block;
+  }
   .image-editor-container {
     flex-direction: row;
   }
 
   .canvas-container {
     display: flex;
+    margin: auto;
     flex-basis: calc(100% - 400px);
     width: calc(100% - 400px);
     position: relative;
@@ -70,7 +74,9 @@
   }
 
   .history-actions {
-    right: 15px;
+    display: block;
+    position: fixed;
+    right: 415px;
     top: 15px;
   }
 }

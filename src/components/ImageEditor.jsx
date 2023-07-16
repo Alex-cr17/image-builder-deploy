@@ -74,15 +74,18 @@ const Editor = () => {
   }, [brushSize]);
 
   function drawImageScaled(img, ctx) {
-    var canvas = ctx.canvas;
-    var hRatio = canvas.width  / img.width    ;
-    var vRatio =  canvas.height / img.height  ;
-    var ratio  = Math.min ( hRatio, vRatio );
-    var centerShift_x = ( canvas.width - img.width*ratio ) / 2;
-    var centerShift_y = ( canvas.height - img.height*ratio ) / 2;
+    let canvas = ctx.canvas;
+    let hRatio = canvas.width  / img.width;
+    let vRatio =  canvas.height / img.height;
+    let ratio  = Math.min ( hRatio, vRatio );
+    let centerShift_x = ( canvas.width - img.width * ratio ) / 2;
+    let centerShift_y = ( canvas.height - img.height * ratio ) / 2;
     ctx.clearRect(0,0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0,0, img.width, img.height,
-      centerShift_x,centerShift_y,img.width*ratio, img.height*ratio);
+    if (img.width > img.height) {
+      ctx.drawImage(img, -20, 0, canvas.width + 40, canvas.height, centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
+    } else {
+      ctx.drawImage(img, 0, 0, img.width, img.height, centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
+    }
     addToHistory(canvas);
   }
   useEffect(() => {
@@ -239,11 +242,11 @@ const Editor = () => {
   return (
     <div className="image-editor-container">
     <div id="canvas-container" className="canvas-container">
-      {/*{history.length ? <div className="history-actions">*/}
-      {/*  <Button variant="text" onClick={handleUndo}><UndoIcon/></Button>*/}
-      {/*  <Button variant="text" onClick={handleRedo}><RedoIcon/></Button>*/}
-      {/*</div> : ''*/}
-      {/*}*/}
+      {history.length ? <div className="history-actions">
+        <Button variant="text" onClick={handleUndo}><UndoIcon/></Button>
+        <Button variant="text" onClick={handleRedo}><RedoIcon/></Button>
+      </div> : ''
+      }
       <canvas
         className="canvas-area"
         ref={canvasRef}
@@ -259,7 +262,7 @@ const Editor = () => {
     </div>
       <List className="list-container">
       <ListItem>
-        <Button sx={{ margin: '20px 0' }} fullWidth size="medium" variant="contained" onClick={handleDownload}>Download</Button>
+        <Button sx={{ margin: '10px 0' }} fullWidth size="medium" variant="contained" onClick={handleDownload}>Download</Button>
       </ListItem>
       <Divider />
         <ListItem sx={{
@@ -274,7 +277,7 @@ const Editor = () => {
             justifyContent: 'space-between',
             alignItems: 'center'
           }}>
-          <Typography variant="subtitle2" align="left" gutterBottom>
+          <Typography margin={0} variant="subtitle2" align="left" gutterBottom>
             Brush Size:
           </Typography>
             {brushSize}
@@ -286,21 +289,10 @@ const Editor = () => {
         <Slider
           aria-label="Always visible"
           id="brushSize"
-          // getAriaValueText={valuetext}
-          // step={10}
-          // marks={marks}
           value={brushSize}
           onChange={handleBrushSizeChange}
         />
           </ListItem>
-        {/*<input*/}
-        {/*  id="brushSize"*/}
-        {/*  type="range"*/}
-        {/*  min="1"*/}
-        {/*  max="50"*/}
-        {/*  value={brushSize}*/}
-        {/*  onChange={handleBrushSizeChange}*/}
-        {/*/>*/}
       <ListItem sx={{ justifyContent: 'center', alignItems: 'center'}}>
         <Button variant="outlined" component="label" onChange={handleFileUpload}>
           Upload File
