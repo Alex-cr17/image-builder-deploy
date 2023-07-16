@@ -239,11 +239,11 @@ const Editor = () => {
   return (
     <div className="image-editor-container">
     <div id="canvas-container" className="canvas-container">
-      {history.length ? <div className="history-actions">
-        <Button variant="text" onClick={handleUndo}><UndoIcon/></Button>
-        <Button variant="text" onClick={handleRedo}><RedoIcon/></Button>
-      </div> : ''
-      }
+      {/*{history.length ? <div className="history-actions">*/}
+      {/*  <Button variant="text" onClick={handleUndo}><UndoIcon/></Button>*/}
+      {/*  <Button variant="text" onClick={handleRedo}><RedoIcon/></Button>*/}
+      {/*</div> : ''*/}
+      {/*}*/}
       <canvas
         className="canvas-area"
         ref={canvasRef}
@@ -257,9 +257,7 @@ const Editor = () => {
       />
       <div id="cursor-image" style={{ width: brushSize, height: brushSize, left: cursorPosition.x, top: cursorPosition.y }}/>
     </div>
-      <List
-        className="list-container"
-      >
+      <List className="list-container">
       <ListItem>
         <Button sx={{ margin: '20px 0' }} fullWidth size="medium" variant="contained" onClick={handleDownload}>Download</Button>
       </ListItem>
