@@ -259,11 +259,6 @@ const Editor = () => {
     </div>
       <List
         className="list-container"
-        sx={{
-          padding: '10px 15px',
-          width: 360,
-          background: 'white',
-        }}
       >
       <ListItem>
         <Button sx={{ margin: '20px 0' }} fullWidth size="medium" variant="contained" onClick={handleDownload}>Download</Button>
