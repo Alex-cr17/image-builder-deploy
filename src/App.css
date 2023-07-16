@@ -41,3 +41,21 @@
   border: 2px solid #fff;
   border-radius: 50%;
 }
+
+@media (min-width:320px)  {
+  .image-editor-container {
+    flex-direction: column;
+  }
+
+  .canvas-container {
+    width: 100%;
+    height: 100%;
+  }
+
+  .list-container {
+    position: absolute !important;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+}

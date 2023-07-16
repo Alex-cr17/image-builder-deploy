@@ -258,6 +258,7 @@ const Editor = () => {
       <div id="cursor-image" style={{ width: brushSize, height: brushSize, left: cursorPosition.x, top: cursorPosition.y }}/>
     </div>
       <List
+        className="list-container"
         sx={{
           padding: '10px 15px',
           width: 360,
