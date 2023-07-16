@@ -1,11 +1,12 @@
 import './App.css'
-import ImageBuilder from './components/ImageBuilder';
+import ImageEditor from './components/ImageEditor';
 
 function App() {
 
   return (
     <>
-     <ImageBuilder />
+      <ImageEditor
+     />
     </>
   )
 }
