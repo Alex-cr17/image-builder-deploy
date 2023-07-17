@@ -19,15 +19,7 @@ const Editor = () => {
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [erase, setErase] = useState(false);
-
   const [scale, setScale] = useState(1);
-  const [worldX, setWorldX] = useState(0);
-  const [worldY, setWorldY] = useState(0);
-  const [mouseX, setMouseX] = useState(0);
-  const [mouseY, setMouseY] = useState(0);
-  const [mouseRX, setMouseRX] = useState(0);
-  const [mouseRY, setMouseRY] = useState(0);
-  const [mouseButton, setMouseButton] = useState(0);
 
   useEffect(() => {
 
@@ -72,8 +64,7 @@ const Editor = () => {
 
     const rect = canvas.getBoundingClientRect();
     const handleMouseMove = (event) => {
-
-      setCursorPosition({ x: event.clientX - rect.left - brushSize / 2, y: event.clientY - rect.top - brushSize / 2 });
+      setCursorPosition({ x: event.clientX - rect.left  - brushSize * scale / 2, y: event.clientY - rect.top / scale - brushSize * scale / 2 });
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -82,34 +73,6 @@ const Editor = () => {
       window.removeEventListener('mousemove', handleMouseMove);
     };
   }, [brushSize]);
-
-  const zoomed = (number) => {
-    return Math.floor(number * scale);
-  };
-
-  const zoomedX = (number) => {
-    return Math.floor((number - worldX) * scale + mouseX);
-  };
-
-  const zoomedY = (number) => {
-    return Math.floor((number - worldY) * scale + mouseY);
-  };
-
-  const zoomedX_INV = (number) => {
-    return Math.floor((number - mouseX) * (1 / scale) + worldX);
-  };
-
-  const zoomedY_INV = (number) => {
-    return Math.floor((number - mouseY) * (1 / scale) + worldY);
-  };
-
-  // const handleMouseDown = (e) => {
-  //   setMouseButton(1);
-  // };
-
-  // const handleMouseUp = (e) => {
-  //   setMouseButton(0);
-  // };
 
   function drawImageScaled(img, ctx) {
     let canvas = ctx.canvas;
@@ -126,9 +89,6 @@ const Editor = () => {
     }
     addToHistory(canvas);
   }
-  // useEffect(() => {
-  //   draw();
-  // }, [scale, worldX, worldY]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -160,22 +120,6 @@ const Editor = () => {
     }
   };
 
-  const draw = () => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.beginPath();
-    ctx.rect(zoomedX(50), zoomedY(50), zoomed(100), zoomed(100));
-    ctx.fillStyle = 'skyblue';
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(zoomedX(350), zoomedY(250), zoomed(50), 0, 2 * Math.PI, false);
-    ctx.fillStyle = 'green';
-    ctx.fill();
-  };
-
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     const reader = new FileReader();
@@ -189,14 +133,9 @@ const Editor = () => {
     }
   };
 
-  const handleMouseDown = (e) => {
-    // e.preventDefault();
-    // e.stopPropagation();
+  const handleMouseDown = () => {
     if(erase) {
       setIsDrawing(true);
-    }
-    else {
-      setMouseButton(1);
     }
   };
 
@@ -205,10 +144,7 @@ const Editor = () => {
       setIsDrawing(false);
       const canvas = canvasRef.current;
       addToHistory(canvas);
-    } else {
-      setMouseButton(0);
     }
-
   };
 
   const handleTouchStart = (e) => {
@@ -216,8 +152,8 @@ const Editor = () => {
     const touch = e.changedTouches[0];
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
+    const x = (touch.clientX - rect.left) / scale;
+    const y = (touch.clientY - rect.top) / scale;
 
     setIsDrawing(true);
 
@@ -265,8 +201,8 @@ const Editor = () => {
     const touch = e.changedTouches[0];
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
+    const x = (touch.clientX - rect.left) / scale;
+    const y = (touch.clientY - rect.top) / scale;
 
     const ctx = canvas.getContext('2d');
     ctx.save();
@@ -282,36 +218,11 @@ const Editor = () => {
     setIsDrawing(false);
   };
   const handleMouseMove = (e) => {
-    // e.preventDefault();
-    // e.stopPropagation();
-    // const canvas = canvasRef.current;
-    // const rect = canvas.getBoundingClientRect();
-    // const x = e.clientX - rect.left;
-    // const y = e.clientY - rect.top;
-    // const xx = mouseRX;
-    // const yy = mouseRY;
-    // console.log('handleMouseMove', xx, yy)
-    //
-    // setMouseX(x);
-    // setMouseY(y);
-    //
-    // setMouseRX(zoomedX_INV(x));
-    // setMouseRY(zoomedY_INV(y));
-    //
-    // if (mouseButton === 1) {
-    //   setWorldX((prevWorldX) => prevWorldX - (mouseRX - xx));
-    //   setWorldY((prevWorldY) => prevWorldY - (mouseRY - yy));
-    //
-    //   setMouseRX(zoomedX_INV(x));
-    //   setMouseRY(zoomedY_INV(y));
-    //   draw();
-    // }
-
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = (e.clientX - rect.left) / scale;
+    const y = (e.clientY - rect.top) / scale;
 
     if (!isDrawing) return;
     ctx.save();
@@ -346,16 +257,17 @@ const Editor = () => {
       </div> : ''
       }
       <TransformWrapper
-        initialScale={1}
+        initialScale={scale}
         disabled={erase}
+        onTransformed={(ref, state ) => setScale(state.scale)}
       >
-        {({ zoomIn, zoomOut, resetTransform, ...rest }) => {
+        {({ zoomIn, zoomOut, resetTransform }) => {
           return (
             <>
               <div className="zoom-actions">
-                <button onClick={() => zoomIn()}>+</button>
-                <button onClick={() => zoomOut()}>-</button>
-                {/*<button onClick={() => resetTransform()}>x</button>*/}
+                <Button onClick={() => zoomIn()}>+</Button>
+                <Button onClick={() => zoomOut()}>-</Button>
+                <Button onClick={() => resetTransform()}>Preview</Button>
               </div>
               <TransformComponent>
                 <canvas
@@ -375,7 +287,7 @@ const Editor = () => {
         }}
       </TransformWrapper>
 
-      <div id="cursor-image" style={{ width: brushSize, height: brushSize, left: cursorPosition.x, top: cursorPosition.y }}/>
+      <div id="cursor-image" style={{ width: brushSize * scale, height: brushSize * scale, left: cursorPosition.x , top: cursorPosition.y }}/>
     </div>
       <List className="list-container">
       <ListItem>
