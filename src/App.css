@@ -52,9 +52,9 @@
 }
 
 @media (min-width:1024px) {
-  #cursor-image {
-    display: block;
-  }
+  /*#cursor-image {*/
+  /*  display: block;*/
+  /*}*/
   .image-editor-container {
     flex-direction: row;
   }
@@ -64,6 +64,7 @@
     margin: auto;
     flex-basis: calc(100% - 400px);
     width: calc(100% - 400px);
+    height: 100%;
     position: relative;
   }
 
@@ -74,16 +75,17 @@
 
   .history-actions {
     display: block;
-    position: fixed;
-    right: 415px;
+    position: absolute;
+    right: 15px;
     top: 15px;
+    z-index: 1;
   }
 
 
   .zoom-actions {
     display: block;
-    position: fixed;
-    right: 415px;
+    position: absolute;
+    right: 15px;
     bottom: 15px;
     z-index: 1;
   }

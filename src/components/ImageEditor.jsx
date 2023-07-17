@@ -7,7 +7,14 @@ import ListItem from '@mui/material/ListItem';
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
 import Typography from '@mui/material/Typography';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
+import RemoveIcon from '@mui/icons-material/Remove';
+import AddIcon from '@mui/icons-material/Add';
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+
+const PADDING_CANVAS = 0; // padding percentage
 
 const Editor = () => {
   const canvasRef = useRef(null);
@@ -83,9 +90,9 @@ const Editor = () => {
     let centerShift_y = ( canvas.height - img.height * ratio ) / 2;
     ctx.clearRect(0,0, canvas.width, canvas.height);
     if (img.width > img.height) {
-      ctx.drawImage(img, -20, 0, canvas.width + 40, canvas.height, centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
+      ctx.drawImage(img, -(canvas.width / 100 * PADDING_CANVAS), 0, canvas.width - (canvas.width / 100 * PADDING_CANVAS * 2), canvas.height, centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
     } else {
-      ctx.drawImage(img, 0, 0, img.width, img.height, centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
+      ctx.drawImage(img, 0, -(img.height / 100 * PADDING_CANVAS), img.width, img.height - (img.height / 100 * PADDING_CANVAS * 2), centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
     }
     addToHistory(canvas);
   }
@@ -148,27 +155,9 @@ const Editor = () => {
   };
 
   const handleTouchStart = () => {
-
     if(erase) {
       setIsDrawing(true);
     }
-
-    // e.preventDefault();
-    // const touch = e.changedTouches[0];
-    // const canvas = canvasRef.current;
-    // const rect = canvas.getBoundingClientRect();
-    // const x = (touch.clientX - rect.left) / scale;
-    // const y = (touch.clientY - rect.top) / scale;
-    //
-    // setIsDrawing(true);
-    //
-    // const ctx = canvas.getContext('2d');
-    // ctx.save();
-    // ctx.beginPath();
-    // ctx.arc(x, y, brushSize / 2, 0, 2 * Math.PI);
-    // ctx.clip();
-    // ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // ctx.restore();
   };
 
   const handleUndo = () => {
@@ -270,9 +259,16 @@ const Editor = () => {
           return (
             <>
               <div className="zoom-actions">
-                <Button onClick={() => zoomIn()}>+</Button>
-                <Button onClick={() => zoomOut()}>-</Button>
-                <Button onClick={() => resetTransform()}>Preview</Button>
+                <Button onClick={() => zoomOut()}>
+                  <RemoveIcon />
+                </Button>
+                <Button disabled>
+                  {parseInt(scale * 100, 10)}%
+                </Button>
+                <Button onClick={() => zoomIn()}>
+                  <AddIcon />
+                </Button>
+                <Button sx={{ marginLeft: '10px' }} onClick={() => resetTransform()}>Preview</Button>
               </div>
               <TransformComponent>
                 <canvas
@@ -292,11 +288,14 @@ const Editor = () => {
         }}
       </TransformWrapper>
 
-      <div id="cursor-image" style={{ width: brushSize * scale, height: brushSize * scale, left: cursorPosition.x , top: cursorPosition.y }}/>
+      <div id="cursor-image" style={{ display: 'block' ? erase : 'none', width: brushSize * scale, height: brushSize * scale, left: cursorPosition.x , top: cursorPosition.y }}/>
     </div>
       <List className="list-container">
       <ListItem>
-        <Button sx={{ margin: '10px 0' }} fullWidth size="medium" variant="contained" onClick={handleDownload}>Download</Button>
+        <Button sx={{ margin: '10px 0' }} fullWidth size="medium" variant="contained" onClick={handleDownload}>
+          <FileDownloadIcon sx={{ marginRight: '10px' }} />
+          Download
+        </Button>
       </ListItem>
       <Divider />
         <ListItem sx={{
@@ -310,7 +309,10 @@ const Editor = () => {
         <ListItem sx={{
           justifyContent: 'space-between',
         }}>
-          <Button variant="outlined" color={erase ? 'primary' : 'secondary'} onClick={handleSetErase}>Erase</Button>
+          <Button variant="outlined" color={erase ? 'primary' : 'secondary'} onClick={handleSetErase}>
+            <AutoFixHighIcon sx={{ marginRight: '10px' }} />
+            Erase
+          </Button>
         </ListItem>
           <ListItem sx={{
             justifyContent: 'space-between',
@@ -334,6 +336,7 @@ const Editor = () => {
           </ListItem>
       <ListItem sx={{ justifyContent: 'center', alignItems: 'center'}}>
         <Button variant="outlined" component="label" onChange={handleFileUpload}>
+          <FileUploadIcon sx={{ marginRight: '10px' }} />
           Upload File
           <input type="file" hidden />
         </Button>
