@@ -147,23 +147,28 @@ const Editor = () => {
     }
   };
 
-  const handleTouchStart = (e) => {
-    e.preventDefault();
-    const touch = e.changedTouches[0];
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const x = (touch.clientX - rect.left) / scale;
-    const y = (touch.clientY - rect.top) / scale;
+  const handleTouchStart = () => {
 
-    setIsDrawing(true);
+    if(erase) {
+      setIsDrawing(true);
+    }
 
-    const ctx = canvas.getContext('2d');
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(x, y, brushSize / 2, 0, 2 * Math.PI);
-    ctx.clip();
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.restore();
+    // e.preventDefault();
+    // const touch = e.changedTouches[0];
+    // const canvas = canvasRef.current;
+    // const rect = canvas.getBoundingClientRect();
+    // const x = (touch.clientX - rect.left) / scale;
+    // const y = (touch.clientY - rect.top) / scale;
+    //
+    // setIsDrawing(true);
+    //
+    // const ctx = canvas.getContext('2d');
+    // ctx.save();
+    // ctx.beginPath();
+    // ctx.arc(x, y, brushSize / 2, 0, 2 * Math.PI);
+    // ctx.clip();
+    // ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // ctx.restore();
   };
 
   const handleUndo = () => {
