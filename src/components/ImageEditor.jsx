@@ -7,7 +7,6 @@ import ListItem from '@mui/material/ListItem';
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
 import Typography from '@mui/material/Typography';
-import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -16,7 +15,7 @@ import Stack from '@mui/material/Stack';
 import { styled } from '@mui/material/styles';
 import Switch  from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import {TransformWrapper, TransformComponent} from "react-zoom-pan-pinch";
 
 const MaterialUISwitch = styled(Switch)(({ theme }) => ({
   width: 62,
@@ -65,10 +64,12 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
   },
 }));
 
-const PADDING_CANVAS = 0; // padding percentage
+const BORDER_WIDTH = 2;
 
 const Editor = () => {
   const canvasRef = useRef(null);
+  const canvasWrapperRef = useRef(null);
+  const cursorRef = useRef(null);
   const [brushSize, setBrushSize] = useState(10);
   const [imageData, setImageData] = useState(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -77,16 +78,27 @@ const Editor = () => {
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [erase, setErase] = useState(false);
-  const [scale, setScale] = useState(1);
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+  const [{ scale, positionX, positionY }, setTransformedState] = useState({ scale: 1, positionX: 0, positionY: 0 });
 
   useEffect(() => {
+    const updateCanvasSize = () => {
+      const { clientWidth, clientHeight } = canvasWrapperRef.current;
+      setCanvasSize({ width: clientWidth, height: clientHeight });
+    };
 
+    // Initial canvas size
+    updateCanvasSize();
+  }, []);
+
+
+  useEffect(() => {
     // const cursorSmall = document.getElementById('cursor-image');
-    const canvasParentContainer = document.getElementById('canvas-container');
-    const canvas = canvasRef.current;
-
-    canvas.width = canvasParentContainer.clientWidth;
-    canvas.height = canvasParentContainer.clientHeight;
+    // const canvasParentContainer = document.getElementById('canvas-container');
+    // const canvas = canvasRef.current;
+    //
+    // canvas.width = canvasParentContainer.clientWidth;
+    // canvas.height = canvasParentContainer.clientHeight;
   //
   //   const positionElement = (e)=> {
   //
@@ -103,26 +115,27 @@ const Editor = () => {
   //   window.addEventListener('mousemove', positionElement)
   }, [])
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-
-    const cursorOverlay = document.getElementById('cursor-image');
-
-    canvas.addEventListener('mouseenter', () => {
-      cursorOverlay.style.display = 'block';
-    });
-
-    canvas.addEventListener('mouseleave', () => {
-      cursorOverlay.style.display = 'none';
-    });
-  }, [])
+  // useEffect(() => {
+  //   const canvas = canvasRef.current;
+  //   const cursor = cursorRef.current;
+  //
+  //   if(cursor) {
+  //     canvas.addEventListener('mouseenter', () => {
+  //       cursor.style.display = 'block';
+  //     });
+  //
+  //     canvas.addEventListener('mouseleave', () => {
+  //       cursor.style.display = 'none';
+  //     });
+  //   }
+  // }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current;
 
     const rect = canvas.getBoundingClientRect();
     const handleMouseMove = (event) => {
-      setCursorPosition({ x: event.clientX - rect.left  - brushSize * scale / 2, y: event.clientY - rect.top / scale - brushSize * scale / 2 });
+      setCursorPosition({ x: event.clientX - rect.left + positionX - BORDER_WIDTH - brushSize / 2, y: event.clientY - rect.top + positionY - BORDER_WIDTH - brushSize / 2 });
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -140,10 +153,10 @@ const Editor = () => {
     let centerShift_x = ( canvas.width - img.width * ratio ) / 2;
     let centerShift_y = ( canvas.height - img.height * ratio ) / 2;
     ctx.clearRect(0,0, canvas.width, canvas.height);
-    if (img.width > img.height) {
-      ctx.drawImage(img, -(canvas.width / 100 * PADDING_CANVAS), 0, canvas.width - (canvas.width / 100 * PADDING_CANVAS * 2), canvas.height, centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
+    if (img.width >= img.height) {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height, centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
     } else {
-      ctx.drawImage(img, 0, -(img.height / 100 * PADDING_CANVAS), img.width, img.height - (img.height / 100 * PADDING_CANVAS * 2), centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
+      ctx.drawImage(img, 0, 0, img.width, img.height, centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
     }
     addToHistory(canvas);
   }
@@ -151,7 +164,6 @@ const Editor = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-
     if (imageData) {
       const image = new Image();
       image.src = imageData;
@@ -192,13 +204,13 @@ const Editor = () => {
   };
 
   const handleMouseDown = () => {
-    if(erase) {
+    if(erase && imageData) {
       setIsDrawing(true);
     }
   };
 
   const handleMouseUp = () => {
-    if (erase) {
+    if (erase && imageData) {
       setIsDrawing(false);
       const canvas = canvasRef.current;
       addToHistory(canvas);
@@ -206,7 +218,7 @@ const Editor = () => {
   };
 
   const handleTouchStart = () => {
-    if(erase) {
+    if(erase && imageData) {
       setIsDrawing(true);
     }
   };
@@ -241,21 +253,23 @@ const Editor = () => {
 
   const handleTouchMove = (e) => {
     e.preventDefault();
-    if (!isDrawing) return;
+    if(erase && imageData) {
+      if (!isDrawing) return;
 
-    const touch = e.changedTouches[0];
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const x = (touch.clientX - rect.left) / scale;
-    const y = (touch.clientY - rect.top) / scale;
+      const touch = e.changedTouches[0];
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const x = (touch.clientX - rect.left) / scale;
+      const y = (touch.clientY - rect.top) / scale;
 
-    const ctx = canvas.getContext('2d');
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(x, y, brushSize / 2, 0, 2 * Math.PI);
-    ctx.clip();
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.restore();
+      const ctx = canvas.getContext('2d');
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y, brushSize / 2, 0, 2 * Math.PI);
+      ctx.clip();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.restore();
+    }
   };
 
   const handleTouchEnd = (e) => {
@@ -263,19 +277,23 @@ const Editor = () => {
     setIsDrawing(false);
   };
   const handleMouseMove = (e) => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / scale;
-    const y = (e.clientY - rect.top) / scale;
+    e.preventDefault();
 
-    if (!isDrawing) return;
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(x, y, brushSize / 2, 0, 2 * Math.PI);
-    ctx.clip();
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.restore();
+    if(erase && imageData) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / scale;
+      const y = (e.clientY - rect.top) / scale;
+
+      if (!isDrawing) return;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y, brushSize / 2 / scale, 0, 2 * Math.PI);
+      ctx.clip();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.restore();
+    }
   };
 
   const handleBrushSizeChange = (e) => {
@@ -285,6 +303,7 @@ const Editor = () => {
   const handleSetErase = () => {
     setErase(prevState => !prevState)
   }
+
   const handleDownload = () => {
     const canvas = canvasRef.current;
     const link = document.createElement('a');
@@ -295,20 +314,40 @@ const Editor = () => {
 
   return (
     <div className="image-editor-container">
-    <div id="canvas-container" className="canvas-container">
-      {history.length ? <div className="history-actions">
-        <Button variant="text" onClick={handleUndo}><UndoIcon/></Button>
-        <Button variant="text" onClick={handleRedo}><RedoIcon/></Button>
-      </div> : ''
-      }
       <TransformWrapper
         initialScale={scale}
-        disabled={erase}
-        onTransformed={(ref, state ) => setScale(state.scale)}
+        disabled={erase || !imageData}
+        centerOnInit
+        onTransformed={(ref, state ) => {
+          setTransformedState(state);
+        }}
       >
         {({ zoomIn, zoomOut, resetTransform }) => {
           return (
-            <>
+            <div className="image-editor-wrapper">
+              {history.length ? <div className="history-actions">
+                <Button variant="text" onClick={handleUndo}><UndoIcon/></Button>
+                <Button variant="text" onClick={handleRedo}><RedoIcon/></Button>
+              </div> : ''
+              }
+              <div ref={canvasWrapperRef} className="canvas-container">
+                  <TransformComponent>
+                    <canvas
+                      className={erase && imageData ? 'erasing' : !erase && imageData ? 'zooming' : ''}
+                      ref={canvasRef}
+                      width={canvasSize.width}
+                      height={canvasSize.height}
+                      id="image-editor-canvas"
+                      onMouseDown={handleMouseDown}
+                      onMouseUp={handleMouseUp}
+                      onMouseMove={handleMouseMove}
+                      onTouchStart={handleTouchStart}
+                      onTouchMove={handleTouchMove}
+                      onTouchEnd={handleTouchEnd}
+                    />
+                  </TransformComponent>
+                { erase && imageData && <div ref={cursorRef} className="cursor-cursor" style={{ width: brushSize, height: brushSize, left: cursorPosition.x , top: cursorPosition.y }}/> }
+              </div>
               <div className="zoom-actions">
                 <Button onClick={() => zoomOut()}>
                   <RemoveIcon />
@@ -321,80 +360,52 @@ const Editor = () => {
                 </Button>
                 <Button sx={{ marginLeft: '10px' }} onClick={() => resetTransform()}>Preview</Button>
               </div>
-              <TransformComponent>
-                <canvas
-                  className="canvas-area"
-                  ref={canvasRef}
-                  id="myCanvas"
-                  onMouseDown={handleMouseDown}
-                  onMouseUp={handleMouseUp}
-                  onMouseMove={handleMouseMove}
-                  onTouchStart={handleTouchStart}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleTouchEnd}
-                />
-              </TransformComponent>
-            </>
+            </div>
           )
         }}
       </TransformWrapper>
-
-      <div id="cursor-image" style={{ display: 'block' ? erase : 'none', width: brushSize * scale, height: brushSize * scale, left: cursorPosition.x , top: cursorPosition.y }}/>
-    </div>
       <List className="list-container">
-      <ListItem>
-        <Button disabled={!imageData} sx={{ margin: '10px 0' }} fullWidth size="medium" variant="contained" onClick={handleDownload}>
-          <FileDownloadIcon sx={{ marginRight: '10px' }} />
-          Download
-        </Button>
-      </ListItem>
-      <Divider />
-        <ListItem sx={{
-          justifyContent: 'space-between',
-        }}>
-        <Typography variant="subtitle1" align="left" gutterBottom>
-          Erase / Restore
-        </Typography>
-        <Button onClick={handleRestore}>Origin</Button>
+        <ListItem>
+          <Button disabled={!imageData} sx={{ margin: '10px 0' }} fullWidth size="medium" variant="contained" onClick={handleDownload}>
+            <FileDownloadIcon sx={{ marginRight: '10px' }} />
+            Download
+          </Button>
         </ListItem>
-        <ListItem sx={{
-          justifyContent: 'space-between',
-        }}>
+        <Divider />
+        <ListItem sx={{ justifyContent: 'space-between' }}>
+          <Typography variant="subtitle1" align="left" gutterBottom>
+            Erase / Restore
+          </Typography>
+          <Button onClick={handleRestore}>Origin</Button>
+        </ListItem>
+        <ListItem sx={{ justifyContent: 'space-between'}}>
           <Stack direction="row" spacing={1} alignItems="center">
             <Typography>Move</Typography>
-            <FormControlLabel
-              control={<MaterialUISwitch checked={erase} onChange={handleSetErase} />}
-            />
+            <FormControlLabel label="" control={<MaterialUISwitch checked={erase} onChange={handleSetErase} />} />
             <Typography>Erase</Typography>
           </Stack>
         </ListItem>
-          <ListItem sx={{
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
+        <ListItem sx={{ justifyContent: 'space-between',  alignItems: 'center'}}>
           <Typography margin={0} variant="subtitle2" align="left" gutterBottom>
             Brush Size:
           </Typography>
             {brushSize}
-          </ListItem>
-          <ListItem sx={{
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
-        <Slider
-          aria-label="Always visible"
-          id="brushSize"
-          value={brushSize}
-          onChange={handleBrushSizeChange}
-        />
-          </ListItem>
-      <ListItem sx={{ justifyContent: 'center', alignItems: 'center'}}>
-        <Button variant="outlined" component="label" onChange={handleFileUpload}>
-          <FileUploadIcon sx={{ marginRight: '10px' }} />
-          Upload File
-          <input type="file" hidden />
-        </Button>
-      </ListItem>
+        </ListItem>
+        <ListItem sx={{ justifyContent: 'space-between', alignItems: 'center'}}>
+          <Slider
+            aria-label="Always visible"
+            id="brushSize"
+            value={brushSize}
+            onChange={handleBrushSizeChange}
+          />
+        </ListItem>
+        <ListItem sx={{ justifyContent: 'center', alignItems: 'center'}}>
+          <Button variant="outlined" component="label" onChange={handleFileUpload}>
+            <FileUploadIcon sx={{ marginRight: '10px' }} />
+              Upload File
+            <input type="file" hidden />
+          </Button>
+        </ListItem>
       </List>
     </div>
   );
