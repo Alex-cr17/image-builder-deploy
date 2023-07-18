@@ -314,18 +314,19 @@ const Editor = () => {
                   />
                 }
               </div>
-              <div className="zoom-actions">
+              {imageData && <div className="zoom-actions">
                 <Button onClick={() => zoomOut()}>
-                  <RemoveIcon />
+                  <RemoveIcon/>
                 </Button>
                 <Button disabled>
                   {parseInt(scale * 100, 10)}%
                 </Button>
                 <Button onClick={() => zoomIn()}>
-                  <AddIcon />
+                  <AddIcon/>
                 </Button>
-                <Button sx={{ marginLeft: '10px' }} onClick={() => resetTransform()}>Preview</Button>
+                <Button sx={{marginLeft: '10px'}} onClick={() => resetTransform()}>Preview</Button>
               </div>
+              }
             </div>
           )
         }}
