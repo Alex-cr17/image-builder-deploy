@@ -91,45 +91,6 @@ const Editor = () => {
     updateCanvasSize();
   }, []);
 
-
-  useEffect(() => {
-    // const cursorSmall = document.getElementById('cursor-image');
-    // const canvasParentContainer = document.getElementById('canvas-container');
-    // const canvas = canvasRef.current;
-    //
-    // canvas.width = canvasParentContainer.clientWidth;
-    // canvas.height = canvasParentContainer.clientHeight;
-  //
-  //   const positionElement = (e)=> {
-  //
-  //     const rect = canvas.getBoundingClientRect();
-  //     const mouseX = e.clientX - rect.left - brushSize / 2;
-  //     const mouseY = e.clientY - rect.top - brushSize / 2;
-  //     console.log("mouseY", mouseY)
-  //     console.log("mouseX", mouseX)
-  //
-  //     cursorSmall.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
-  //
-  //   }
-  //
-  //   window.addEventListener('mousemove', positionElement)
-  }, [])
-
-  // useEffect(() => {
-  //   const canvas = canvasRef.current;
-  //   const cursor = cursorRef.current;
-  //
-  //   if(cursor) {
-  //     canvas.addEventListener('mouseenter', () => {
-  //       cursor.style.display = 'block';
-  //     });
-  //
-  //     canvas.addEventListener('mouseleave', () => {
-  //       cursor.style.display = 'none';
-  //     });
-  //   }
-  // }, [])
-
   useEffect(() => {
     const canvas = canvasRef.current;
 
@@ -145,7 +106,18 @@ const Editor = () => {
     };
   }, [brushSize]);
 
-  function drawImageScaled(img, ctx) {
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (imageData) {
+      const image = new Image();
+      image.src = imageData;
+      image.onload = () => drawImageScaled(image, ctx);
+
+    }
+  }, [imageData]);
+
+  const drawImageScaled = (img, ctx) => {
     let canvas = ctx.canvas;
     let hRatio = canvas.width  / img.width;
     let vRatio =  canvas.height / img.height;
@@ -161,17 +133,6 @@ const Editor = () => {
     addToHistory(canvas);
   }
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (imageData) {
-      const image = new Image();
-      image.src = imageData;
-      image.onload = () => drawImageScaled(image, ctx);
-
-    }
-  }, [imageData]);
-
   const addToHistory = (canvas) => {
     const data = canvas.toDataURL('image/png');
     setHistory((prevHistory) => [...prevHistory.slice(0, historyIndex + 1), data]);
@@ -186,7 +147,6 @@ const Editor = () => {
       const image = new Image();
       image.src = originalImageData;
       image.onload = () => drawImageScaled(image, ctx);
-
     }
   };
 
@@ -331,22 +291,28 @@ const Editor = () => {
               </div> : ''
               }
               <div ref={canvasWrapperRef} className="canvas-container">
-                  <TransformComponent>
-                    <canvas
-                      className={erase && imageData ? 'erasing' : !erase && imageData ? 'zooming' : ''}
-                      ref={canvasRef}
-                      width={canvasSize.width}
-                      height={canvasSize.height}
-                      id="image-editor-canvas"
-                      onMouseDown={handleMouseDown}
-                      onMouseUp={handleMouseUp}
-                      onMouseMove={handleMouseMove}
-                      onTouchStart={handleTouchStart}
-                      onTouchMove={handleTouchMove}
-                      onTouchEnd={handleTouchEnd}
-                    />
-                  </TransformComponent>
-                { erase && imageData && <div ref={cursorRef} className="cursor-cursor" style={{ width: brushSize, height: brushSize, left: cursorPosition.x , top: cursorPosition.y }}/> }
+                <TransformComponent>
+                  <canvas
+                    className={erase && imageData ? 'erasing' : !erase && imageData ? 'zooming' : ''}
+                    ref={canvasRef}
+                    width={canvasSize.width}
+                    height={canvasSize.height}
+                    id="image-editor-canvas"
+                    onMouseDown={handleMouseDown}
+                    onMouseUp={handleMouseUp}
+                    onMouseMove={handleMouseMove}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                  />
+                </TransformComponent>
+                { erase && imageData &&
+                  <div
+                    ref={cursorRef}
+                    className="cursor-cursor"
+                    style={{ width: brushSize, height: brushSize, left: cursorPosition.x , top: cursorPosition.y }}
+                  />
+                }
               </div>
               <div className="zoom-actions">
                 <Button onClick={() => zoomOut()}>

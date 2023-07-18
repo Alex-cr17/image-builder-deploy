@@ -2,8 +2,12 @@
 
 #root {
   width: 100%;
-  height: 700px;
+  height: 100vh;
   margin: 0 auto;
+  -moz-user-select: none; /* firefox */
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE*/
+  user-select: none; /* Standard syntax */
 }
 
 .image-editor-container {
@@ -25,7 +29,16 @@
   cursor: none;
 }
 
-.cursor-cursor {
+.canvas-container {
+  overflow: hidden;
+  display: flex;
+  margin: auto;
+  height: 100%;
+  position: relative;
+}
+
+.canvas-container .cursor-cursor {
+  display: none;
   pointer-events: none;
   position: absolute;
   z-index: 9999999;
@@ -35,68 +48,61 @@
   border-radius: 50%;
 }
 
+.history-actions {
+  display: block;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  z-index: 1;
+}
+
+.zoom-actions {
+  display: block;
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 1;
+}
+
 @media (min-width:320px)  {
   /*#cursor-image {*/
   /*  display: none;*/
   /*}*/
-  .image-editor-container {
-    flex-direction: column;
-  }
+  /*.image-editor-container {*/
+  /*  flex-direction: column;*/
+  /*}*/
 
-  .list-container {
-    padding: 10px 15px;
-    width: 100%;
-    background: transparent;
-  }
-  .canvas-container {
-    width: 100%;
-    height: calc(100% - 300px);
-  }
+  /*.list-container {*/
+  /*  padding: 10px 15px;*/
+  /*  width: 100%;*/
+  /*  background: transparent;*/
+  /*}*/
+  /*.canvas-container {*/
+  /*  width: 100%;*/
+  /*  height: calc(100% - 300px);*/
+  /*}*/
 
   .image-editor-wrapper {
     padding: 55px;
     width: 100%;
     position: relative;
   }
-  .history-actions {
-   display: none;
-  }
+  /*.history-actions {*/
+  /* display: none;*/
+  /*}*/
 }
 
 @media (min-width:1024px) {
-  /*#cursor-image {*/
-  /*  display: block;*/
-  /*}*/
-  .image-editor-container {
-    flex-direction: row;
+  .canvas-container .cursor-cursor {
+    display: block;
   }
 
-  .canvas-container {
-    display: flex;
-    margin: auto;
-    height: 100%;
-    position: relative;
+  .image-editor-container {
+    flex-direction: row;
   }
 
   .list-container {
     width: 400px;
     background: #fff;
-  }
-
-  .history-actions {
-    display: block;
-    position: absolute;
-    right: 10px;
-    top: 10px;
-    z-index: 1;
-  }
-
-
-  .zoom-actions {
-    display: block;
-    position: absolute;
-    right: 10px;
-    bottom: 10px;
-    z-index: 1;
   }
 }
