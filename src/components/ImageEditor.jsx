@@ -12,7 +12,58 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
+import Stack from '@mui/material/Stack';
+import { styled } from '@mui/material/styles';
+import Switch  from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+
+const MaterialUISwitch = styled(Switch)(({ theme }) => ({
+  width: 62,
+  height: 34,
+  padding: 7,
+  '& .MuiSwitch-switchBase': {
+    margin: 1,
+    padding: 0,
+    transform: 'translateX(6px)',
+    '&.Mui-checked': {
+      color: '#fff',
+      transform: 'translateX(22px)',
+      '& .MuiSwitch-thumb:before': {
+        backgroundImage: `url('data:image/svg+xml;utf8,<svg focusable="false" aria-hidden="true" viewBox="0 0 24 24"  xmlns="http://www.w3.org/2000/svg" height="20" width="20"><path fill="${encodeURIComponent(
+          '#fff',
+        )}" d="M7.5 5.6 10 7 8.6 4.5 10 2 7.5 3.4 5 2l1.4 2.5L5 7zm12 9.8L17 14l1.4 2.5L17 19l2.5-1.4L22 19l-1.4-2.5L22 14zM22 2l-2.5 1.4L17 2l1.4 2.5L17 7l2.5-1.4L22 7l-1.4-2.5zm-7.63 5.29a.9959.9959 0 0 0-1.41 0L1.29 18.96c-.39.39-.39 1.02 0 1.41l2.34 2.34c.39.39 1.02.39 1.41 0L16.7 11.05c.39-.39.39-1.02 0-1.41l-2.33-2.35zm-1.03 5.49-2.12-2.12 2.44-2.44 2.12 2.12-2.44 2.44z"></path></svg>')`,
+      },
+      '& + .MuiSwitch-track': {
+        opacity: 1,
+        backgroundColor: theme.palette.mode === 'dark' ? '#8796A5' : '#aab4be',
+      },
+    },
+  },
+  '& .MuiSwitch-thumb': {
+    backgroundColor: theme.palette.mode === 'dark' ? '#003892' : '#001e3c',
+    width: 32,
+    height: 32,
+    '&:before': {
+      content: "''",
+      position: 'absolute',
+      width: '100%',
+      height: '100%',
+      left: 0,
+      top: 0,
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'center',
+      backgroundImage: `url('data:image/svg+xml;utf8,<svg focusable="false" aria-hidden="true" viewBox="0 0 24 24"  xmlns="http://www.w3.org/2000/svg" height="20" width="20"><path fill="${encodeURIComponent(
+        '#fff',
+      )}" d="m15 3 2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3h-6zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3v6zm6 12-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6h6zm12-6-2.3 2.3-2.87-2.89-1.42 1.42 2.89 2.87L15 21h6v-6z"></path></svg>')`,
+    },
+  },
+  '& .MuiSwitch-track': {
+    opacity: 1,
+    backgroundColor: theme.palette.mode === 'dark' ? '#8796A5' : '#aab4be',
+    borderRadius: 20 / 2,
+  },
+}));
 
 const PADDING_CANVAS = 0; // padding percentage
 
@@ -292,7 +343,7 @@ const Editor = () => {
     </div>
       <List className="list-container">
       <ListItem>
-        <Button sx={{ margin: '10px 0' }} fullWidth size="medium" variant="contained" onClick={handleDownload}>
+        <Button disabled={!imageData} sx={{ margin: '10px 0' }} fullWidth size="medium" variant="contained" onClick={handleDownload}>
           <FileDownloadIcon sx={{ marginRight: '10px' }} />
           Download
         </Button>
@@ -309,10 +360,13 @@ const Editor = () => {
         <ListItem sx={{
           justifyContent: 'space-between',
         }}>
-          <Button variant="outlined" color={erase ? 'primary' : 'secondary'} onClick={handleSetErase}>
-            <AutoFixHighIcon sx={{ marginRight: '10px' }} />
-            Erase
-          </Button>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography>Move</Typography>
+            <FormControlLabel
+              control={<MaterialUISwitch checked={erase} onChange={handleSetErase} />}
+            />
+            <Typography>Erase</Typography>
+          </Stack>
         </ListItem>
           <ListItem sx={{
             justifyContent: 'space-between',
