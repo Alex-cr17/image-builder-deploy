@@ -42,6 +42,10 @@
   border-radius: 50%;
 }
 
+.canvas-container:hover .cursor-cursor {
+  display: block;
+}
+
 .history-actions {
   display: block;
   position: absolute;
@@ -66,10 +70,13 @@
   }
 }
 
-@media (min-width:1024px) {
-  .canvas-container:hover .cursor-cursor {
-    display: block;
+@media (hover: none) {
+  .canvas-container .cursor-cursor {
+    display: none !important;
   }
+}
+
+@media (min-width:768px) {
 
   .image-editor-container {
     flex-direction: row;
