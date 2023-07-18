@@ -273,7 +273,7 @@ const Editor = () => {
   };
 
   return (
-    <div className="image-editor-container">
+    <div className="image-editor-container"  style={{touchAction:  "none"}}>
       <TransformWrapper
         initialScale={scale}
         disabled={erase || !imageData}
