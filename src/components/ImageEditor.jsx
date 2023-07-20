@@ -236,8 +236,8 @@ const Editor = () => {
           return (
             <div className={classes.imageEditorWrapper}>
               {history.length ? <div className={classes.historyActions}>
-                <Button variant="text" onClick={handleUndo}><UndoIcon/></Button>
-                <Button variant="text" onClick={handleRedo}><RedoIcon/></Button>
+                <Button variant="text" onTouchStart={handleUndo} onClick={handleUndo}><UndoIcon/></Button>
+                <Button variant="text" onTouchStart={handleRedo} onClick={handleRedo}><RedoIcon/></Button>
               </div> : ''
               }
               <div ref={canvasWrapperRef} className={classes.canvasContainer}>
