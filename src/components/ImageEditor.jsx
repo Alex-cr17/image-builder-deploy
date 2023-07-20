@@ -287,7 +287,6 @@ const Editor = () => {
             Download
           </Button>
         </ListItem>
-        <Divider />
         <ListItem sx={{ justifyContent: 'space-between' }}>
           <Typography variant="subtitle1" align="left" gutterBottom>
             Erase / Restore
@@ -321,7 +320,6 @@ const Editor = () => {
               Upload File
             <input type="file" hidden accept=".png,.jpg,.jpeg" />
           </Button>
-          <Typography variant="body2" sx={{color: 'gray', padding: '10px' }}>Accept formats: png, jpg, jpeg</Typography>
         </ListItem>
       </List>
     </div>
