@@ -17,6 +17,7 @@ import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
 import Switch  from '@mui/material/Switch';
 import {TransformWrapper, TransformComponent} from "react-zoom-pan-pinch";
 
+import classes from './ImageEditor.module.css';
 const BORDER_WIDTH = 2;
 
 const Editor = () => {
@@ -57,7 +58,7 @@ const Editor = () => {
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [brushSize]);
+  }, [brushSize, positionX, positionY]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -222,7 +223,7 @@ const Editor = () => {
   };
 
   return (
-    <div className="image-editor-container"  style={{touchAction:  "none"}}>
+    <div className={classes.imageEditor}  style={{touchAction:  "none"}}>
       <TransformWrapper
         initialScale={scale}
         disabled={erase || !imageData}
@@ -233,20 +234,19 @@ const Editor = () => {
       >
         {({ zoomIn, zoomOut, resetTransform }) => {
           return (
-            <div className="image-editor-wrapper">
-              {history.length ? <div className="history-actions">
+            <div className={classes.imageEditorWrapper}>
+              {history.length ? <div className={classes.historyActions}>
                 <Button variant="text" onClick={handleUndo}><UndoIcon/></Button>
                 <Button variant="text" onClick={handleRedo}><RedoIcon/></Button>
               </div> : ''
               }
-              <div ref={canvasWrapperRef} className="canvas-container">
+              <div ref={canvasWrapperRef} className={classes.canvasContainer}>
                 <TransformComponent>
                   <canvas
-                    className={erase && imageData ? 'erasing' : !erase && imageData ? 'zooming' : ''}
+                    className={erase && imageData ? classes.erasing : !erase && imageData ? classes.zooming : ''}
                     ref={canvasRef}
                     width={canvasSize.width}
                     height={canvasSize.height}
-                    id="image-editor-canvas"
                     onMouseDown={handleMouseDown}
                     onMouseUp={handleMouseUp}
                     onMouseMove={handleMouseMove}
@@ -258,12 +258,12 @@ const Editor = () => {
                 { erase && imageData &&
                   <div
                     ref={cursorRef}
-                    className="cursor-cursor"
+                    className={classes.customCursor}
                     style={{ width: brushSize, height: brushSize, left: cursorPosition.x , top: cursorPosition.y }}
                   />
                 }
               </div>
-              {imageData && <div className="zoom-actions">
+              {imageData && <div className={classes.zoomActions}>
                 <Button onClick={() => zoomOut()}>
                   <RemoveIcon/>
                 </Button>
@@ -280,9 +280,9 @@ const Editor = () => {
           )
         }}
       </TransformWrapper>
-      <List className="list-container">
+      <List className={classes.listContainer}>
         <ListItem>
-          <Button disabled={!imageData} sx={{ margin: '10px 0' }} fullWidth size="medium" variant="contained" onClick={handleDownload}>
+          <Button disabled={!imageData} className={classes.downloadButton} fullWidth size="medium" variant="contained" onClick={handleDownload}>
             <FileDownloadIcon sx={{ marginRight: '10px' }} />
             Download
           </Button>
