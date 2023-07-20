@@ -68,6 +68,12 @@
     width: 100%;
     position: relative;
   }
+
+  .list-container {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+  }
 }
 
 @media (hover: none) {
@@ -77,12 +83,12 @@
 }
 
 @media (min-width:768px) {
-
   .image-editor-container {
     flex-direction: row;
   }
 
   .list-container {
+    position: relative;
     width: 400px;
     background: #fff;
   }
