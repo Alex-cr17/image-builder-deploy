@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Button from '@mui/material/Button';
 import Slider from '@mui/material/Slider';
-import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import UndoIcon from '@mui/icons-material/Undo';
@@ -144,6 +143,7 @@ const Editor = () => {
   };
 
   const handleUndo = () => {
+    console.log('Undo', historyIndex)
     if (historyIndex > 0) {
       setHistoryIndex((prevIndex) => prevIndex - 1);
       const image = new Image();
@@ -162,7 +162,6 @@ const Editor = () => {
   };
 
   const handleTouchMove = (e) => {
-    e.preventDefault();
     if(erase && imageData) {
       if (!isDrawing) return;
 
@@ -185,6 +184,8 @@ const Editor = () => {
   const handleTouchEnd = (e) => {
     e.preventDefault();
     setIsDrawing(false);
+    const canvas = canvasRef.current;
+    addToHistory(canvas);
   };
   const handleMouseMove = (e) => {
     e.preventDefault();
@@ -236,8 +237,8 @@ const Editor = () => {
           return (
             <div className={classes.imageEditorWrapper}>
               {history.length ? <div className={classes.historyActions}>
-                <Button variant="text" onTouchStart={handleUndo} onClick={handleUndo}><UndoIcon/></Button>
-                <Button variant="text" onTouchStart={handleRedo} onClick={handleRedo}><RedoIcon/></Button>
+                <Button variant="text" onClick={handleUndo}><UndoIcon/></Button>
+                <Button variant="text" onClick={handleRedo}><RedoIcon/></Button>
               </div> : ''
               }
               <div ref={canvasWrapperRef} className={classes.canvasContainer}>
