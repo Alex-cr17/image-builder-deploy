@@ -143,7 +143,6 @@ const Editor = () => {
   };
 
   const handleUndo = () => {
-    console.log('Undo', historyIndex)
     if (historyIndex > 0) {
       setHistoryIndex((prevIndex) => prevIndex - 1);
       const image = new Image();
