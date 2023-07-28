@@ -1,11 +1,11 @@
 import { useRef, useState, Fragment, useEffect } from 'react';
 import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import ControlPointIcon from '@mui/icons-material/ControlPoint';
 import { Stage, Layer, Image, Transformer } from 'react-konva';
-const CANVAS_WIDTH = 500;
-const CANVAS_HEIGHT = 500;
-const ZOOM = 0.4;
+import List from '@mui/material/List';
+import classes from './ImageEditor.module.css';
+import ListItem from '@mui/material/ListItem';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
 
 const ImageShape = ({ onSelect, image, onBringToFront, isSelected }) => {
   const shapeRef = useRef(null);
@@ -44,6 +44,8 @@ const ImageShape = ({ onSelect, image, onBringToFront, isSelected }) => {
 const ImageBuilder = () => {
   const stageRef = useRef(null);
   const [images, setImages] = useState([]);
+  const canvasWrapperRef = useRef(null);
+
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -63,9 +65,7 @@ const ImageBuilder = () => {
     }
   };
 
-
   const handleSelect = (id) => {
-    console.log(id)
     setImages((prevImages) => {
       // Toggle isSelected state of the clicked image
       const updatedImages = prevImages.map((image) => {
@@ -75,7 +75,6 @@ const ImageBuilder = () => {
       return updatedImages;
     });
   };
-
 
   const handleDownload = () => {
     const dataURL = stageRef.current.toDataURL();
@@ -116,44 +115,52 @@ const ImageBuilder = () => {
   };
 
   return (
-    <div style={{"display": "flex"}}>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
-        <label>Builder</label>
-        <div style={{"display": "flex"}}>
-          <Card>
-            <Stage width={800} height={600}
-                   onMouseDown={checkDeselect}
-                   onTouchStart={checkDeselect}
-                   ref={stageRef}
-            >
-              <Layer>
-                {images.map((image, i) => (
-
-                  <ImageShape
-                    onSelect={() => handleSelect(image.id)}
-                    image={image}
-                    isSelected={image.isSelected}
-                    onBringToFront={() => handleBringToFront(image.id)}
-                    key={image.name}
-                  />
-                ))}
-              </Layer>
-            </Stage>
-          </Card>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+    <div className={classes.imageEditor}  style={{touchAction:  "none"}}>
+      <div style={{ display: "flex", width: "100%", justifyContent: "space-between", alignItems: "start" }}>
+        <div ref={canvasWrapperRef} className={classes.canvasContainer}>
+          <Stage
+            width="800"
+            height="500"
+            onMouseDown={checkDeselect}
+            onTouchStart={checkDeselect}
+            ref={stageRef}
+          >
+            <Layer>
+              {images.map((image) => (
+                <ImageShape
+                  onSelect={() => handleSelect(image.id)}
+                  image={image}
+                  isSelected={image.isSelected}
+                  onBringToFront={() => handleBringToFront(image.id)}
+                  key={image.name}
+                />
+              ))}
+            </Layer>
+          </Stage>
+        </div>
+          <List className={classes.listContainer}>
+            <ListItem>
+              <Button disabled={!images.length} className={classes.downloadButton} fullWidth size="medium" variant="contained" onClick={handleDownload}>
+                <FileDownloadIcon sx={{ marginRight: '10px' }} />
+                Download
+              </Button>
+            </ListItem>
+            <ListItem sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
+              <Button variant="outlined" component="label" onChange={handleImageUpload}>
+                <FileUploadIcon sx={{ marginRight: '10px' }} />
+                Upload File
+                <input type="file" hidden accept=".png,.jpg,.jpeg" />
+              </Button>
+            </ListItem>
             {images.length ? images.map((file, index) => {
               return (
-                <div key={index}>{file.name}</div>
+                <ListItem  key={index} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
+                  <div>{file.name}</div>
+                </ListItem>
               )
             }) : ''}
-            <div style={{ display: "flex"}}>
-              <label htmlFor="file" style={{cursor: "pointer"}}><ControlPointIcon fontSize="large"/></label>
-              <input type="file" hidden id="file" multiple onChange={handleImageUpload} />
-            </div>
-            <Button onClick={handleDownload}>Save as PNG</Button>
-          </div>
+          </List>
         </div>
-      </div>
     </div>
   );
 };
