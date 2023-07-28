@@ -29,6 +29,7 @@ const ImageShape = ({ onSelect, image, onBringToFront, isSelected }) => {
         onTouchStart={onBringToFront}
         ref={shapeRef}
         onClick={onSelect}
+        onTouchEnd={onSelect}
         draggable
       />
       {isSelected && (
