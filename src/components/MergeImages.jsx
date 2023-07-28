@@ -1,151 +1,117 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, Fragment, useEffect } from 'react';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import interact from 'interactjs';
 import ControlPointIcon from '@mui/icons-material/ControlPoint';
+import { Stage, Layer, Image, Transformer } from 'react-konva';
+const CANVAS_WIDTH = 500;
+const CANVAS_HEIGHT = 500;
+const ZOOM = 0.4;
 
-const ImageBuilder = () => {
-  const canvasRef = useRef(null);
-  const [imageFiles, setImageFiles] = useState([]);
-  const [imagePositions, setImagePositions] = useState(null);
+const ImageShape = ({ onSelect, image, onBringToFront, isSelected }) => {
+  const shapeRef = useRef(null);
+  const trRef = useRef(null);
 
   useEffect(() => {
-    interact('.resize-drag').resizable({
-      // resize from all edges and corners
-      edges: { left: true, right: true, bottom: true, top: true },
+    if (trRef.current && isSelected) {
+      trRef.current.nodes([shapeRef.current]);
+      trRef.current.getLayer().batchDraw();
+    }
+  }, [isSelected]);
 
-      listeners: {
-        move (event) {
-          var target = event.target
-          var x = (parseFloat(target.getAttribute('data-x')) || 0)
-          var y = (parseFloat(target.getAttribute('data-y')) || 0)
+  return (
+    <Fragment>
+      <Image
+        id={image.id}
+        className={image.id}
+        image={image.img}
+        zIndex={image.zIndex}
+        onMouseDown={onBringToFront}
+        onTouchStart={onBringToFront}
+        ref={shapeRef}
+        onClick={onSelect}
+        draggable
+      />
+      {isSelected && (
+        <Transformer
+          ref={trRef}
+        />
+      )}
+    </Fragment>
+  )
+}
 
-          // update the element's style
-          target.style.width = event.rect.width + 'px'
-          target.style.height = event.rect.height + 'px'
+const ImageBuilder = () => {
+  const stageRef = useRef(null);
+  const [images, setImages] = useState([]);
 
-          // translate when resizing from top or left edges
-          x += event.deltaRect.left
-          y += event.deltaRect.top
-          target.style.transform = 'translate(' + x + 'px,' + y + 'px)'
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
 
-          target.setAttribute('data-x', x)
-          target.setAttribute('data-y', y)
-          // target.textContent = Math.round(event.rect.width) + '\u00D7' + Math.round(event.rect.height)
-        },
-        end (event) {
-          var target = event.target
-          var x = (parseFloat(target.getAttribute('data-x')) || 0)
-          var y = (parseFloat(target.getAttribute('data-y')) || 0)
+    reader.onload = () => {
+      const img = new window.Image();
+      img.src = reader.result;
 
-          // update the element's style
-          target.style.width = event.rect.width + 'px'
-          target.style.height = event.rect.height + 'px'
-
-          // translate when resizing from top or left edges
-          x += event.deltaRect.left
-          y += event.deltaRect.top
-
-          var index = (parseFloat(target.getAttribute('data-index')))
-
-          handleImagePositionChange(index, x, y, event.rect.width, event.rect.height);
-
-        }
-      },
-      modifiers: [
-        // keep the edges inside the parent
-        interact.modifiers.restrictEdges({
-          outer: 'parent'
-        }),
-
-        // minimum size
-        interact.modifiers.restrictSize({
-          min: { width: 100, height: 50 }
-        })
-      ],
-
-      inertia: true
-    })
-      .draggable({
-        listeners: {
-          move: window.dragMoveListener,
-          end (event) {
-            var target = event.target
-            var x = (parseFloat(target.getAttribute('data-x')) || 0)
-            var y = (parseFloat(target.getAttribute('data-y')) || 0)
-
-            var index = (parseFloat(target.getAttribute('data-index')))
-
-            handleImagePositionChange(index, x, y, event.rect.width, event.rect.height);
-
-          }
-        },
-        inertia: true,
-        modifiers: [
-          interact.modifiers.restrictEdges({
-            outer: 'parent'
-          }),
-          interact.modifiers.restrictRect({
-            restriction: 'parent',
-            endOnly: true
-          })
-        ]
-      })
-
-// this function is used later in the resizing and gesture demos
-    window.dragMoveListener = dragMoveListener
-  }, [imageFiles]);
-
-  function dragMoveListener (event) {
-    var target = event.target
-    // keep the dragged position in the data-x/data-y attributes
-    var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
-    var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
-
-
-    // translate the element
-    target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
-
-    // update the posiion attributes
-    target.setAttribute('data-x', x)
-    target.setAttribute('data-y', y)
-  }
-
-  const handleImageUpload = (event) => {
-    const files = Array.from(event.target.files);
-    setImageFiles([...imageFiles, ...files]);
-  };
-
-  const handleImagePositionChange = (index, x, y, w, h) => {
-    setImagePositions(prevState => ({...prevState, [index]: { x, y, w, h }}));
-  };
-
-  const mergeImages = () => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-
-    // Clear the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw each image onto the canvas
-    imageFiles.forEach((file, index) => {
-      const img = new Image();
-      img.src = URL.createObjectURL(file);
       img.onload = () => {
-        const { x, y, w, h } = imagePositions[index] || { x: 0, y: 0, w: 0, h: 0 };
-        ctx.drawImage(img, x, y, w, h);
-        URL.revokeObjectURL(img.src);
+        setImages([...images, { name: file.name, id: images.length + 1, src: reader.result, img }]);
       };
+    };
+
+    if (file) {
+      reader.readAsDataURL(file);
+    }
+  };
+
+
+  const handleSelect = (id) => {
+    console.log(id)
+    setImages((prevImages) => {
+      // Toggle isSelected state of the clicked image
+      const updatedImages = prevImages.map((image) => {
+        return image.id === id ? { ...image, isSelected: true } : { ...image, isSelected: false }
+
+      });
+      return updatedImages;
     });
   };
 
 
-  const saveAsPNG = () => {
-    const canvas = canvasRef.current;
+  const handleDownload = () => {
+    const dataURL = stageRef.current.toDataURL();
     const link = document.createElement('a');
-    link.href = canvas.toDataURL('image/png');
-    link.download = 'merged_image.png';
+    link.download = 'canvas_image.png';
+    link.href = dataURL;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleBringToFront = (id) => {
+    setImages((prevImages) => {
+      // Increase the zIndex of the selected image to bring it to the front
+      const updatedImages = prevImages.map((image) => {
+        if (image.id === id) {
+          return { ...image, zIndex: Date.now() }; // Set a new zIndex to move it to the front
+        }
+        return image;
+      });
+      return updatedImages;
+    });
+  };
+
+  const checkDeselect = (e) => {
+    // deselect when clicked on empty area
+    const clickedOnEmpty = e.target === e.target.getStage();
+    if (clickedOnEmpty) {
+      setImages((prevImages) => {
+        // Toggle isSelected state of the clicked image
+        const updatedImages = prevImages.map((image) => {
+          return { ...image, isSelected: false }
+
+        });
+        return updatedImages;
+      });
+    }
   };
 
   return (
@@ -154,26 +120,27 @@ const ImageBuilder = () => {
         <label>Builder</label>
         <div style={{"display": "flex"}}>
           <Card>
-            <div style={{ width: '500px', height: '500px', position: 'relative' }}>
-              {imageFiles.length ? imageFiles.map((file, index) => {
-                console.log(file)
-                return (
-                  <svg
-                    key={index}
-                    className="resize-drag"
-                    data-index={index}
-                    data-x={0}
-                    data-y={0}
-                    style={{ position: 'absolute', left: 0, right: 0, border: '1px solid gray' }}
-                  >
-                    <image href={URL.createObjectURL(file)} width="100%" height="100%" />
-                  </svg>
-                )
-              }) : ''}
-            </div>
+            <Stage width={800} height={600}
+                   onMouseDown={checkDeselect}
+                   onTouchStart={checkDeselect}
+                   ref={stageRef}
+            >
+              <Layer>
+                {images.map((image, i) => (
+
+                  <ImageShape
+                    onSelect={() => handleSelect(image.id)}
+                    image={image}
+                    isSelected={image.isSelected}
+                    onBringToFront={() => handleBringToFront(image.id)}
+                    key={image.name}
+                  />
+                ))}
+              </Layer>
+            </Stage>
           </Card>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            {imageFiles.length ? imageFiles.map((file, index) => {
+            {images.length ? images.map((file, index) => {
               return (
                 <div key={index}>{file.name}</div>
               )
@@ -182,16 +149,9 @@ const ImageBuilder = () => {
               <label htmlFor="file" style={{cursor: "pointer"}}><ControlPointIcon fontSize="large"/></label>
               <input type="file" hidden id="file" multiple onChange={handleImageUpload} />
             </div>
-            <Button onClick={mergeImages}>Merge Images</Button>
-            <Button onClick={saveAsPNG}>Save as PNG</Button>
+            <Button onClick={handleDownload}>Save as PNG</Button>
           </div>
         </div>
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
-        <label>Preview</label>
-        <Card>
-          <canvas ref={canvasRef} width={500} height={500} />
-        </Card>
       </div>
     </div>
   );
