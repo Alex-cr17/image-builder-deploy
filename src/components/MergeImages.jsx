@@ -1,4 +1,4 @@
-import { useRef, useState, Fragment, useEffect } from 'react';
+import {useRef, useState, Fragment, useEffect} from 'react';
 import Button from '@mui/material/Button';
 import { Stage, Layer, Image, Transformer } from 'react-konva';
 import List from '@mui/material/List';
@@ -75,16 +75,8 @@ const cropTransparentPixels = async (blob) => {
 };
 
 
-const ImageShape = ({ onSelect, image, isSelected }) => {
+const ImageShape = ({ onSelect, image }) => {
   const shapeRef = useRef(null);
-  const trRef = useRef(null);
-
-  useEffect(() => {
-    if (trRef.current && isSelected) {
-      trRef.current.nodes([shapeRef.current]);
-      trRef.current.getLayer().batchDraw();
-    }
-  }, [isSelected]);
 
   return (
     <Fragment>
@@ -99,11 +91,6 @@ const ImageShape = ({ onSelect, image, isSelected }) => {
         onTouchStart={onSelect}
         draggable
       />
-      {isSelected && (
-        <Transformer
-          ref={trRef}
-        />
-      )}
     </Fragment>
   )
 }
@@ -112,7 +99,9 @@ const ImageBuilder = () => {
   const [images, setImages] = useState([]);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const stageRef = useRef(null);
+  const layerRef = useRef(null);
   const canvasWrapperRef = useRef(null);
+  const trRef = useRef(null);
 
   useEffect(() => {
     const updateCanvasSize = () => {
@@ -128,6 +117,9 @@ const ImageBuilder = () => {
 
     const file = e.target.files[0];
     const reader = new FileReader();
+    // remove prev selection
+    trRef.current.nodes([]);
+    trRef.current.getLayer().batchDraw();
 
     reader.onload = () => {
       const img = new window.Image();
@@ -150,15 +142,11 @@ const ImageBuilder = () => {
     e.target.value = null
   };
 
-  const handleSelect = (id) => {
-    setImages((prevImages) => {
-      // Toggle isSelected state of the clicked image
-      const updatedImages = prevImages.map((image) => {
-        return image.id === id ? { ...image, isSelected: true } : { ...image, isSelected: false }
-
-      });
-      return updatedImages;
-    });
+  const handleSelect = e => {
+      if (trRef.current) {
+        trRef.current.nodes([e.target]);
+        trRef.current.getLayer().batchDraw();
+      }
   };
 
 
@@ -170,7 +158,6 @@ const ImageBuilder = () => {
 
     // The stageRef.current contains the actual Konva Stage instance
     const konvaStage = stageRef.current.getStage();
-
     // Use the Konva Stage instance to get the canvas element
     if (konvaStage && konvaStage.content) {
       return konvaStage.content;
@@ -181,20 +168,19 @@ const ImageBuilder = () => {
 
   const handleDownload = () => {
 
-    setImages((prevImages) =>  prevImages.map(image => ({ ...image, isSelected: false })));
+    trRef.current.nodes([])
+    trRef.current.getLayer().batchDraw();
 
     setTimeout(() => {
-
-      cropTransparentPixels(getCanvasElementFromStage(stageRef).firstChild).then(result => {
-        const link = document.createElement('a');
-        link.download = 'canvas_image.png';
-        link.href = URL.createObjectURL(result);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      })
-
-    }, 0)
+        cropTransparentPixels(getCanvasElementFromStage(stageRef).firstChild).then(result => {
+          const link = document.createElement('a');
+          link.download = 'canvas_image.png';
+          link.href = URL.createObjectURL(result);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        })
+      }, 0)
   };
 
   const handleBringToFront = (id) => {
@@ -221,17 +207,11 @@ const ImageBuilder = () => {
     });
   }
   const checkDeselect = (e) => {
-    // deselect when clicked on empty area
     const clickedOnEmpty = e.target === e.target.getStage();
-    if (clickedOnEmpty) {
-      setImages((prevImages) => {
-        // Toggle isSelected state of the clicked image
-        const updatedImages = prevImages.map((image) => {
-          return { ...image, isSelected: false }
 
-        });
-        return updatedImages;
-      });
+    if (clickedOnEmpty) {
+      trRef.current.nodes([]);
+      trRef.current.getLayer().batchDraw();
     }
   };
 
@@ -246,21 +226,21 @@ const ImageBuilder = () => {
             onTouchStart={checkDeselect}
             ref={stageRef}
           >
-            <Layer>
+            <Layer ref={layerRef}>
               {images.map((image) => (
-                <ImageShape
-                  onSelect={() => handleSelect(image.id)}
-                  image={image}
-                  isSelected={image.isSelected}
-                  key={image.id}
-                />
+                <ImageShape onSelect={handleSelect} image={image} key={image.id} />
               ))}
+
+              <Transformer
+
+                ref={trRef}
+              />
             </Layer>
           </Stage>
         </div>
           <List className={classes.listContainer}>
             <ListItem>
-              <Button disabled={!images.length} className={classes.downloadButton} fullWidth size="medium" variant="contained" onClick={handleDownload}>
+              <Button disabled={!images.length} className={classes.downloadButton} fullWidth size="medium" variant="contained" onClick={() => handleDownload(stageRef)}>
                 <FileDownloadIcon sx={{ marginRight: '10px' }} />
                 Download
               </Button>
@@ -276,7 +256,6 @@ const ImageBuilder = () => {
               return (
                 <ListItem
                   key={index}
-
                   secondaryAction={
                     <>
                       <IconButton edge="end" aria-label="bring to front" onClick={() => handleBringToFront(data.id)}>
