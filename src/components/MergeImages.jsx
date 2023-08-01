@@ -149,41 +149,21 @@ const ImageBuilder = () => {
       }
   };
 
+  const handleDownload = async () => {
+    const stage = await stageRef.current.getStage();
+    await trRef.current.nodes([]);
+    const objectUrl = await cropTransparentPixels(stage.toCanvas());
 
-
-  const getCanvasElementFromStage = stageRef => {
-    if (!stageRef || !stageRef.current) {
-      return null; // Return null or handle the case when the Stage ref is not available
-    }
-
-    // The stageRef.current contains the actual Konva Stage instance
-    const konvaStage = stageRef.current.getStage();
-    // Use the Konva Stage instance to get the canvas element
-    if (konvaStage && konvaStage.content) {
-      return konvaStage.content;
-    }
-
-    return null; // Return null or handle the case when the canvas element is not available
-  };
-
-  const handleDownload = () => {
-
-    trRef.current.nodes([])
-    trRef.current.getLayer().batchDraw();
-
-    setTimeout(() => {
-        cropTransparentPixels(getCanvasElementFromStage(stageRef).firstChild).then(result => {
-          const link = document.createElement('a');
-          link.download = 'canvas_image.png';
-          link.href = URL.createObjectURL(result);
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        })
-      }, 0)
+    const link = document.createElement('a');
+    link.download = 'canvas_image.png';
+    link.href = URL.createObjectURL(objectUrl);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleBringToFront = (id) => {
+
     setImages((prevImages) => {
       const updatedImages = prevImages.map((image) => {
         if (image.id === id) {
